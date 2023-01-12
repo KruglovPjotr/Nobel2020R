@@ -3,9 +3,10 @@ library(shiny)
 library(plotly)
 library(summarytools)
 library(magrittr)
-library(rvest)
-library(RColorBrewer)
 library(ggiraph)
+library(RColorBrewer)
+
+
 
 # Load data
 data <- read.csv("data/nobel2020.csv")
@@ -13,81 +14,6 @@ data$category <- as.factor(data$category)
 data$born_country_code <- as.factor(data$born_country_code)
 data$died_country_code <- as.factor(data$died_country_code)
 data$gender <- as.factor(data$gender)
-
-# Map load
-url <-
-  "https://www.nationsonline.org/oneworld/country_code_list.htm"
-iso_codes <- url %>%
-  read_html() %>%
-  html_nodes(xpath = '//*[@id="Country-Codes-A-C"]') %>%
-  html_table()
-iso_codes <- iso_codes[[1]][,-1]
-iso_codes <-
-  iso_codes[!apply(iso_codes, 1, function(x) {
-    all(x == x[1])
-  }),]
-
-iso_codes2 <- url %>%
-  read_html() %>%
-  html_nodes(xpath = '//*[@id="Country-Codes-D-H"]') %>%
-  html_table()
-iso_codes2 <- iso_codes2[[1]][,-1]
-iso_codes2 <-
-  iso_codes2[!apply(iso_codes2, 1, function(x) {
-    all(x == x[1])
-  }),]
-
-iso_codes3 <- url %>%
-  read_html() %>%
-  html_nodes(xpath = '//*[@id="CountryCodes-I-L"]') %>%
-  html_table()
-iso_codes3 <- iso_codes3[[1]][,-1]
-iso_codes3 <-
-  iso_codes3[!apply(iso_codes3, 1, function(x) {
-    all(x == x[1])
-  }),]
-
-iso_codes4 <- url %>%
-  read_html() %>%
-  html_nodes(xpath = '//*[@id="Country-Codes-M-P"]') %>%
-  html_table()
-iso_codes4 <- iso_codes4[[1]][,-1]
-iso_codes4 <-
-  iso_codes4[!apply(iso_codes4, 1, function(x) {
-    all(x == x[1])
-  }),]
-
-iso_codes5 <- url %>%
-  read_html() %>%
-  html_nodes(xpath = '//*[@id="Country-Codes-Q-T"]') %>%
-  html_table()
-iso_codes5 <- iso_codes5[[1]][,-1]
-iso_codes5 <-
-  iso_codes5[!apply(iso_codes5, 1, function(x) {
-    all(x == x[1])
-  }),]
-
-iso_codes6 <- url %>%
-  read_html() %>%
-  html_nodes(xpath = '//*[@id="Country-Codes-U-Z"]') %>%
-  html_table()
-iso_codes6 <- iso_codes6[[1]][,-1]
-iso_codes6 <-
-  iso_codes6[!apply(iso_codes6, 1, function(x) {
-    all(x == x[1])
-  }),]
-
-total <-
-  rbind(iso_codes,
-        iso_codes2,
-        iso_codes3,
-        iso_codes4,
-        iso_codes5,
-        iso_codes6)
-names(total) <- c("Country", "born_country_code", "ISO3", "UN")
-
-world_data <- ggplot2::map_data('world')
-world_data <- fortify(world_data)
 
 #UI
 ui <- fluidPage(
@@ -215,17 +141,7 @@ ui <- fluidPage(
                 plotlyOutput("ggPlot2"))
     ),
     
-    tabPanel(
-      "Preemiad kaardil",
-      sidebarPanel(
-        h2("Perioodi sisestamine"),
-        p("Sisesta aastate vahemik - abil"),
-        textInput("text", label = h3("Sisesta aastad:"), value = "1901-2020"),
-      ),
-      mainPanel
-      (br(),
-        girafeOutput("mapplot"))
-    )
+    
   )
 )
 
@@ -380,103 +296,7 @@ server <- function(input, output) {
     fig
   })
   
-  #Map
-  output$mapplot <- renderGirafe({
-    y1 = as.integer(strsplit(input$text, split = "-")[[1]][1])
-    y2 = as.integer(strsplit(input$text, split = "-")[[1]][2])
-    if (y2 > y1) {
-      x4 <- count(data$born_country_code[data$year >= y1 & data$year <= y2])
-    }
-    else
-    {
-      x4 <- count(data$born_country_code[data$year >= y2 & data$year <= y1])
-    }
-    
-    total$Value <-
-      x4$freq[match(total$born_country_code, x4$x, nomatch = NA_integer_)]
-    
-    
-    total$Country[total$Country == 'United States of America'] <-
-      'USA'
-    total$Country[total$Country == 'United Kingdom'] <- 'UK'
-    total$Country[total$Country == 'Viet Nam'] <- 'Vietnam'
-    total$Country[total$Country == 'Virgin Islands, US'] <-
-      'Virgin Islands'
-    total$Country[total$Country == 'Wallis and Futuna Islands'] <-
-      'Wallis and Futuna'
-    total$Country[total$Country == 'Venezuela (Bolivarian Republic)'] <-
-      'Venezuela'
-    total$Country[total$Country == 'Tanzania, United Republic of'] <-
-      'Tanzania'
-    total$Country[total$Country == 'Taiwan, Republic of China'] <-
-      'Taiwan'
-    total$Country[total$Country == 'Syrian Arab Republic (Syria)'] <-
-      'Syria'
-    total$Country[total$Country == 'Saint-Martin (French part)'] <-
-      'Saint Martin'
-    total$Country[total$Country == 'Saint-Barthélemy'] <-
-      'Saint Barthelemy'
-    total$Country[total$Country == 'Russian Federation'] <- 'Russia'
-    total$Country[total$Country == 'Réunion'] <- 'Reunion'
-    total$Country[total$Country == 'Pitcairn'] <- 'Pitcairn Islands'
-    total$Country[total$Country == 'Palestinian Territory'] <-
-      'Palestine'
-    total$Country[total$Country == 'Micronesia, Federated States of'] <-
-      'Micronesia'
-    total$Country[total$Country == 'Macedonia, Republic of'] <-
-      'North Macedonia'
-    total$Country[total$Country == 'Lao PDR'] <- 'Laos'
-    total$Country[total$Country == 'Korea (South)'] <- 'South Korea'
-    total$Country[total$Country == 'Korea (North)'] <- 'North Korea'
-    total$Country[total$Country == 'Iran, Islamic Republic of'] <-
-      'Iran'
-    total$Country[total$Country == 'Holy See (Vatican City State)'] <-
-      'Vatican'
-    total$Country[total$Country == 'Heard and Mcdonald Islands'] <-
-      'Heard Island'
-    total$Country[total$Country == 'French Southern Territories'] <-
-      'French Southern and Antarctic Lands'
-    total$Country[total$Country == 'Falkland Islands (Malvinas)'] <-
-      'Falkland Islands'
-    total$Country[total$Country == 'Cocos (Keeling) Islands'] <-
-      'Cocos Islands'
-    total$Country[total$Country == 'Brunei Darussalam'] <- 'Brunei'
-    total$Country[total$Country == 'Congo (Brazzaville)'] <-
-      'Republic of Congo'
-    total$Country[total$Country == 'Congo, (Kinshasa)'] <-
-      'Democratic Republic of the Congo'
-    
-    world_data['ISO3'] <-
-      total$ISO3[match(world_data$region, total$Country)]
-    
-    
-    plotdf <- total
-    plotdf <- plotdf[!is.na(plotdf$ISO3),]
-    
-    world_data$Value <-
-      plotdf$Value[match(world_data$ISO3, plotdf$ISO3)]
-    
-    
-    g <- ggplot() +
-      geom_polygon_interactive(
-        data = world_data,
-        color = 'gray70',
-        size = 0.1,
-        aes(
-          x = long,
-          y = lat,
-          fill = world_data$Value,
-          group = group,
-          tooltip = world_data$Value
-        )
-      ) +
-      scale_fill_gradientn(colours = brewer.pal(5, "RdBu"), na.value = 'white') +
-      scale_y_continuous(limits = c(-60, 90), breaks = c()) +
-      scale_x_continuous(breaks = c())
-    
-    map <- girafe(ggobj = g)
-    map
-  })
+  
 }
 
 
