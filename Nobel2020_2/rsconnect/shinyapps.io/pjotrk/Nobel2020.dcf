@@ -1,0 +1,13 @@
+name: Nobel2020
+title: Nobel2020
+username:
+account: pjotrk
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8025050
+bundleId: 6727077
+url: https://pjotrk.shinyapps.io/Nobel2020/
+when: 1673556704.17948
+lastSyncTime: 1673556704.17948
+asMultiple: FALSE
+asStatic: FALSE
